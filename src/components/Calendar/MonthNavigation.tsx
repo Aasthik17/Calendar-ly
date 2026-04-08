@@ -9,9 +9,10 @@ type MonthNavigationProps = {
   onPrev: () => void;
   onNext: () => void;
   onToday: () => void;
+  isFlipping?: boolean;
 };
 
-export default function MonthNavigation({ viewMonth, onPrev, onNext, onToday }: MonthNavigationProps) {
+export default function MonthNavigation({ viewMonth, onPrev, onNext, onToday, isFlipping = false }: MonthNavigationProps) {
   const current = getCurrentViewMonth();
   const isCurrentMonth = viewMonth.year === current.year && viewMonth.month === current.month;
 
@@ -27,7 +28,7 @@ export default function MonthNavigation({ viewMonth, onPrev, onNext, onToday }: 
     <nav className={styles.nav} aria-label="Month navigation">
       <div className={styles.controls}>
         <button
-          className={styles.arrowBtn}
+          className={`${styles.arrowBtn} ${isFlipping ? styles.navArrowDisabled : ''}`}
           onClick={onPrev}
           aria-label={`Go to ${prevMonth.m} ${prevMonth.y}`}
           type="button"
@@ -54,7 +55,7 @@ export default function MonthNavigation({ viewMonth, onPrev, onNext, onToday }: 
           Today
         </button>
         <button
-          className={styles.arrowBtn}
+          className={`${styles.arrowBtn} ${isFlipping ? styles.navArrowDisabled : ''}`}
           onClick={onNext}
           aria-label={`Go to ${nextMonth.m} ${nextMonth.y}`}
           type="button"

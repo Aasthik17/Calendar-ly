@@ -62,6 +62,10 @@
   --duration-range:     180ms;
   --duration-panel:     250ms;
   --duration-hero:      400ms;
+  --flip-duration:      1000ms;
+  --flip-easing:        cubic-bezier(0.4, 0.0, 0.2, 1);
+  --flip-perspective:   1400px;
+
 
   /* ---- Layout ---- */
   --calendar-max-width: 1100px;
@@ -116,3 +120,21 @@ textarea {
 :focus:not(:focus-visible) {
   outline: none;
 }
+
+@media (prefers-reduced-motion: reduce) {
+  /* Override all flip animations with an instant opacity cross-fade */
+  .flipNext-exit,
+  .flipPrev-exit {
+    animation: none;
+    opacity: 0;
+    transition: opacity 120ms ease;
+  }
+
+  .flipNext-enter,
+  .flipPrev-enter {
+    animation: none;
+    opacity: 1;
+    transition: opacity 120ms ease;
+  }
+}
+

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 import { CalendarDay, CalendarDate, NavDirection, ViewMonth, SelectionState } from '@/types/calendar';
 import DateCell from './DateCell';
 import WeekdayHeaders from './WeekdayHeaders';
@@ -9,8 +9,11 @@ import styles from './CalendarGrid.module.css';
 
 type CalendarGridProps = {
   days: CalendarDay[];
+  exitingMonthDays: CalendarDay[];
   viewMonth: ViewMonth;
+  exitingMonth: ViewMonth | null;
   navDirection: NavDirection;
+  isFlipping: boolean;
   focusDate: CalendarDate | null;
   onFocusDateApplied: () => void;
   onPrevMonth: () => void;
@@ -23,12 +26,57 @@ type CalendarGridProps = {
   clearSelection: () => void;
   selection: SelectionState;
   onNavigateToDate: (date: CalendarDate, shouldSelectStart?: boolean) => void;
+  onExitAnimationEnd: () => void;
+  onEnterAnimationEnd: () => void;
 };
+
+// Extracted inner grid to render both entering and exiting months cleanly
+function DateGridCells({
+  days,
+  selection,
+  onCellClick,
+  onCellPointerDown,
+  onCellPointerEnter,
+  onCellPointerUp
+}: {
+  days: CalendarDay[];
+  selection: SelectionState;
+  onCellClick: (date: CalendarDate) => void;
+  onCellPointerDown: (date: CalendarDate) => void;
+  onCellPointerEnter: (date: CalendarDate) => void;
+  onCellPointerUp: () => void;
+}) {
+  return (
+    <div
+      className={styles.grid}
+      data-dragging={selection.isDragging ? 'true' : 'false'}
+      role="grid"
+      aria-label="Calendar dates"
+    >
+      {days.map((day) => {
+        const key = `${day.date.year}-${day.date.month}-${day.date.day}`;
+        return (
+          <DateCell
+            key={key}
+            day={day}
+            onClick={onCellClick}
+            onPointerDown={onCellPointerDown}
+            onPointerEnter={onCellPointerEnter}
+            onPointerUp={onCellPointerUp}
+          />
+        );
+      })}
+    </div>
+  );
+}
 
 export default function CalendarGrid({
   days,
+  exitingMonthDays,
   viewMonth,
+  exitingMonth,
   navDirection,
+  isFlipping,
   focusDate,
   onFocusDateApplied,
   onPrevMonth,
@@ -41,23 +89,10 @@ export default function CalendarGrid({
   clearSelection,
   selection,
   onNavigateToDate,
+  onExitAnimationEnd,
+  onEnterAnimationEnd,
 }: CalendarGridProps) {
-  const [animClass, setAnimClass] = useState('');
   const gridRef = useRef<HTMLDivElement>(null);
-
-  // Month transition animation
-  useEffect(() => {
-    if (!navDirection) return;
-
-    const inClass = navDirection === 'next' ? styles.slideInRight : styles.slideInLeft;
-    setAnimClass(inClass);
-
-    const timer = setTimeout(() => {
-      setAnimClass('');
-    }, 300);
-
-    return () => clearTimeout(timer);
-  }, [navDirection, viewMonth]);
 
   useEffect(() => {
     if (!focusDate) return;
@@ -93,7 +128,9 @@ export default function CalendarGrid({
     const target = e.target as HTMLElement;
     if (!target.hasAttribute('data-date')) return;
 
-    const cells = gridRef.current?.querySelectorAll('[data-date]');
+    // Search within the entering layer only to avoid jumping to the ghost layer
+    const enteringLayer = gridRef.current?.querySelector(`.${styles['gridLayer--entering']}`);
+    const cells = enteringLayer?.querySelectorAll('[data-date]');
     if (!cells) return;
 
     const cellArray = Array.from(cells) as HTMLButtonElement[];
@@ -109,6 +146,7 @@ export default function CalendarGrid({
         break;
       case 'ArrowLeft':
         e.preventDefault();
+        newIndex = Math.max(currentIndex - 0, 0);
         newIndex = Math.max(currentIndex - 1, 0);
         break;
       case 'ArrowDown':
@@ -143,6 +181,9 @@ export default function CalendarGrid({
     }
   }, [clearSelection, days, viewMonth, onNavigateToDate]);
 
+  const noop = () => {};
+  const flipClass = navDirection === 'next' ? 'flipNext' : 'flipPrev';
+
   return (
     <div className={styles.gridWrapper}>
       <MonthNavigation
@@ -150,33 +191,55 @@ export default function CalendarGrid({
         onPrev={onPrevMonth}
         onNext={onNextMonth}
         onToday={onToday}
+        isFlipping={isFlipping}
       />
-      <WeekdayHeaders />
       <div
-        className={styles.gridTransition}
+        className={styles.flipViewport}
         ref={gridRef}
         onKeyDown={handleKeyDown}
         onPointerUp={onCellPointerUp}
       >
-        <div
-          className={`${styles.grid} ${animClass}`}
-          data-dragging={selection.isDragging ? 'true' : 'false'}
-          role="grid"
-          aria-label="Calendar dates"
-        >
-          {days.map((day) => {
-            const key = `${day.date.year}-${day.date.month}-${day.date.day}`;
-            return (
-              <DateCell
-                key={key}
-                day={day}
-                onClick={handleCellClick}
-                onPointerDown={handleCellPointerDown}
-                onPointerEnter={onCellPointerEnter}
-                onPointerUp={onCellPointerUp}
+        <div className={styles.flipContainer}>
+          {exitingMonth && (
+            <div
+              className={`
+                ${styles.gridLayer}
+                ${styles['gridLayer--exiting']}
+                ${styles[`${flipClass}-exit`]}
+              `}
+              onAnimationEnd={onExitAnimationEnd}
+              aria-hidden="true"
+            >
+              <WeekdayHeaders />
+              <DateGridCells
+                days={exitingMonthDays}
+                selection={selection}
+                onCellClick={noop}
+                onCellPointerDown={noop}
+                onCellPointerEnter={noop}
+                onCellPointerUp={noop}
               />
-            );
-          })}
+            </div>
+          )}
+
+          <div
+            className={`
+              ${styles.gridLayer}
+              ${styles['gridLayer--entering']}
+              ${isFlipping ? styles[`${flipClass}-enter`] : ''}
+            `}
+            onAnimationEnd={isFlipping ? onEnterAnimationEnd : undefined}
+          >
+            <WeekdayHeaders />
+            <DateGridCells
+              days={days}
+              selection={selection}
+              onCellClick={handleCellClick}
+              onCellPointerDown={handleCellPointerDown}
+              onCellPointerEnter={onCellPointerEnter}
+              onCellPointerUp={onCellPointerUp}
+            />
+          </div>
         </div>
       </div>
     </div>

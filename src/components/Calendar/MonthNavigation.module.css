@@ -54,6 +54,11 @@
   background-color: var(--color-ink-primary-15);
 }
 
+.navArrowDisabled {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
 .todayChip {
   font-family: var(--font-sans);
   font-size: 0.75rem;

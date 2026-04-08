@@ -8,53 +8,106 @@
   gap: 0;
 }
 
-/* Transition wrapper for month transitions */
-.gridTransition {
-  position: relative;
+/* The perspective wrapper */
+.flipViewport {
+  perspective: var(--flip-perspective);
+  perspective-origin: center top;
   overflow: hidden;
+  position: relative;
 }
 
-.gridContent {
-  transition: transform var(--duration-month-in) var(--ease-default),
-              opacity var(--duration-month-in) var(--ease-default);
+/* The flipping container */
+.flipContainer {
+  position: relative;
+  transform-style: preserve-3d;
 }
 
-.slideOutLeft {
-  transform: translateX(-12px);
-  opacity: 0;
+/* The grid layer */
+.gridLayer {
+  width: 100%;
+  backface-visibility: hidden;
+  transform-origin: top center;
 }
 
-.slideOutRight {
-  transform: translateX(12px);
-  opacity: 0;
+/* Exiting vs Entering */
+.gridLayer--exiting {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 2;
+  pointer-events: none;
 }
 
-.slideInLeft {
-  animation: slideFromLeft var(--duration-month-in) var(--ease-default) forwards;
+.gridLayer--entering {
+  position: relative;
+  z-index: 1;
 }
 
-.slideInRight {
-  animation: slideFromRight var(--duration-month-in) var(--ease-default) forwards;
+/* --- Next direction --- */
+.flipNext-exit {
+  animation: flipNextOut var(--flip-duration) var(--flip-easing) forwards;
+}
+.flipNext-enter {
+  animation: flipNextIn var(--flip-duration) var(--flip-easing) forwards;
 }
 
-@keyframes slideFromLeft {
-  from {
-    transform: translateX(-12px);
-    opacity: 0;
+@keyframes flipNextOut {
+  0% { 
+    transform: rotateX(0deg); 
+    opacity: 1; 
+    filter: brightness(1) drop-shadow(0 0px 0px rgba(0,0,0,0));
   }
-  to {
-    transform: translateX(0);
-    opacity: 1;
+  100% { 
+    transform: rotateX(-90deg); 
+    opacity: 0.15; 
+    filter: brightness(0.7) drop-shadow(0 30px 20px rgba(0,0,0,0.15));
   }
 }
 
-@keyframes slideFromRight {
-  from {
-    transform: translateX(12px);
-    opacity: 0;
+@keyframes flipNextIn {
+  0% { 
+    transform: rotateX(90deg); 
+    opacity: 0.15; 
+    filter: brightness(0.7) drop-shadow(0 -30px 20px rgba(0,0,0,0.15));
   }
-  to {
-    transform: translateX(0);
-    opacity: 1;
+  100% { 
+    transform: rotateX(0deg); 
+    opacity: 1; 
+    filter: brightness(1) drop-shadow(0 0px 0px rgba(0,0,0,0));
+  }
+}
+
+/* --- Prev direction --- */
+.flipPrev-exit {
+  animation: flipPrevOut var(--flip-duration) var(--flip-easing) forwards;
+}
+.flipPrev-enter {
+  animation: flipPrevIn var(--flip-duration) var(--flip-easing) forwards;
+}
+
+@keyframes flipPrevOut {
+  0% { 
+    transform: rotateX(0deg); 
+    opacity: 1; 
+    filter: brightness(1) drop-shadow(0 0px 0px rgba(0,0,0,0));
+  }
+  100% { 
+    transform: rotateX(90deg); 
+    opacity: 0.15; 
+    filter: brightness(0.7) drop-shadow(0 -30px 20px rgba(0,0,0,0.15));
+  }
+}
+
+@keyframes flipPrevIn {
+  0% { 
+    transform: rotateX(-90deg); 
+    opacity: 0.15; 
+    filter: brightness(0.7) drop-shadow(0 30px 20px rgba(0,0,0,0.15));
+  }
+  100% { 
+    transform: rotateX(0deg); 
+    opacity: 1; 
+    filter: brightness(1) drop-shadow(0 0px 0px rgba(0,0,0,0));
   }
 }
