@@ -2,7 +2,7 @@
 
 export function getSampleNotes(year: number): Record<string, string> {
   return {
-    [`${year}-07`]: `Book the cabin before prices go up. Call Sara about the weekend plans. Don't forget sunscreen — last summer was a disaster.`,
+    [`${year}-07`]: `Book the cabin before prices go up. Call Aasthik about the weekend plans. Don't forget sunscreen — last summer was a disaster.`,
 
     [`${year}-07-05:${year}-07-12`]: `Summer getaway. Morning runs along the coast. Finish the book I've been neglecting since March.`,
 

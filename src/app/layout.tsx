@@ -25,7 +25,7 @@ const lora = Lora({
 });
 
 export const metadata: Metadata = {
-  title: 'Wall Calendar',
+  title: 'Calendarly',
   description: 'An interactive calendar component with date range selection, integrated notes, and seasonal hero imagery.',
 };
 

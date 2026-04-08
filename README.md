@@ -1,4 +1,4 @@
-# Wall Calendar
+# Calendarly
 
 An interactive calendar component built with Next.js and TypeScript.
 It supports date range selection, integrated notes with local persistence,
