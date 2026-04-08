@@ -85,7 +85,11 @@ export function formatRangeLabel(start: CalendarDate, end: CalendarDate): string
 /** Formats as short range for summary bar: "Jul 5 → Jul 12" */
 export function formatRangeSummary(start: CalendarDate, end: CalendarDate): string {
   const startMonth = MONTH_NAMES_SHORT[start.month - 1];
-  const endMonth = MONTH_NAMES_SHORT[end.month - 1];
+  if (start.month === end.month && start.year === end.year) {
+    return `${startMonth} ${start.day} → ${startMonth} ${end.day}`;
+  }
+
+  const endMonth = MONTH_NAMES_FULL[end.month - 1];
   return `${startMonth} ${start.day} → ${endMonth} ${end.day}`;
 }
 

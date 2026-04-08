@@ -26,11 +26,21 @@
 
   /* Warning / limit */
   --color-warning:       #B91C1C;
+  --color-overlay-text:  #FFFFFF;
+  --color-overlay-text-secondary: color-mix(in srgb, var(--color-overlay-text) 80%, transparent);
+  --color-ink-primary-08: color-mix(in srgb, var(--color-ink-primary) 8%, transparent);
+  --color-ink-primary-10: color-mix(in srgb, var(--color-ink-primary) 10%, transparent);
+  --color-ink-primary-15: color-mix(in srgb, var(--color-ink-primary) 15%, transparent);
+  --color-accent-soft: color-mix(in srgb, var(--color-accent) 15%, transparent);
+  --color-accent-fallback: color-mix(in srgb, var(--color-accent) 40%, var(--color-paper));
+  --shadow-hero-label:
+    0 1px 3px color-mix(in srgb, var(--color-ink-primary) 35%, transparent),
+    0 4px 16px color-mix(in srgb, var(--color-ink-primary) 20%, transparent);
 
   /* ---- Typography ---- */
-  --font-serif-display:  'DM Serif Display', Georgia, serif;
-  --font-sans:           'DM Sans', system-ui, -apple-system, sans-serif;
-  --font-serif-body:     'Lora', Georgia, serif;
+  --font-serif-display:  var(--font-dm-serif-display);
+  --font-sans:           var(--font-dm-sans);
+  --font-serif-body:     var(--font-lora);
 
   /* ---- Spacing ---- */
   --space-xs:  0.25rem;

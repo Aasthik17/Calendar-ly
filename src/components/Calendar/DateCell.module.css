@@ -199,7 +199,7 @@
 }
 
 .cellInRange:hover .number {
-  background-color: rgba(192, 85, 58, 0.15);
+  background-color: var(--color-accent-soft);
 }
 
 /* ---- In Range Preview (during drag) ---- */
@@ -213,7 +213,7 @@
 }
 
 /* Suppress hover state during drag */
-.dragActive .cell:hover .number {
+[data-dragging='true'] .cell:hover .number {
   background-color: transparent;
 }
 

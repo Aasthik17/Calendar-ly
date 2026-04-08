@@ -1,14 +1,9 @@
 import CalendarRoot from '@/components/Calendar/CalendarRoot';
+import styles from './page.module.css';
 
 export default function Home() {
   return (
-    <main style={{
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      minHeight: '100vh',
-      padding: 'var(--space-lg)',
-    }}>
+    <main className={styles.main}>
       <CalendarRoot />
     </main>
   );

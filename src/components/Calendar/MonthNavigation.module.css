@@ -47,11 +47,11 @@
 }
 
 .arrowBtn:hover {
-  background-color: rgba(28, 25, 23, 0.08);
+  background-color: var(--color-ink-primary-08);
 }
 
 .arrowBtn:active {
-  background-color: rgba(28, 25, 23, 0.15);
+  background-color: var(--color-ink-primary-15);
 }
 
 .todayChip {

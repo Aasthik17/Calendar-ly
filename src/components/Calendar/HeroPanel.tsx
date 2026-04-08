@@ -12,12 +12,15 @@ type HeroPanelProps = {
 };
 
 export default function HeroPanel({ imageUrl, imageAlt, monthName, year, onImageLoad }: HeroPanelProps) {
-  const [currentImage, setCurrentImage] = useState(imageUrl);
+  const [currentImage, setCurrentImage] = useState<string | null>(imageUrl);
   const [nextImage, setNextImage] = useState<string | null>(null);
   const [transitioning, setTransitioning] = useState(false);
+  const [showFallback, setShowFallback] = useState(false);
   const imgRef = useRef<HTMLImageElement>(null);
+  const failedImageRef = useRef<string | null>(null);
 
   useEffect(() => {
+    if (failedImageRef.current === imageUrl) return;
     if (imageUrl === currentImage) return;
 
     // Start cross-fade: preload new image
@@ -27,6 +30,9 @@ export default function HeroPanel({ imageUrl, imageAlt, monthName, year, onImage
     const img = new Image();
     img.crossOrigin = 'anonymous';
     img.onload = () => {
+      failedImageRef.current = null;
+      setShowFallback(false);
+
       // Give time for the fade transition
       setTimeout(() => {
         setCurrentImage(imageUrl);
@@ -38,9 +44,11 @@ export default function HeroPanel({ imageUrl, imageAlt, monthName, year, onImage
       }, 400);
     };
     img.onerror = () => {
-      setCurrentImage(imageUrl);
+      failedImageRef.current = imageUrl;
+      setCurrentImage(null);
       setNextImage(null);
       setTransitioning(false);
+      setShowFallback(true);
     };
     img.src = imageUrl;
   }, [imageUrl, currentImage, onImageLoad]);
@@ -52,18 +60,29 @@ export default function HeroPanel({ imageUrl, imageAlt, monthName, year, onImage
   };
 
   return (
-    <div className={styles.hero} role="img" aria-label={imageAlt}>
+    <div
+      className={styles.hero}
+      role={showFallback ? 'img' : undefined}
+      aria-label={showFallback ? imageAlt : undefined}
+    >
       {/* Current image */}
-      <div className={`${styles.imageWrapper} ${transitioning ? styles.imageExiting : styles.imageVisible}`}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          ref={imgRef}
-          src={currentImage}
-          alt={imageAlt}
-          crossOrigin="anonymous"
-          onLoad={handleCurrentLoad}
-        />
-      </div>
+      {currentImage && (
+        <div className={`${styles.imageWrapper} ${transitioning ? styles.imageExiting : styles.imageVisible}`}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            ref={imgRef}
+            src={currentImage}
+            alt={imageAlt}
+            crossOrigin="anonymous"
+            onLoad={handleCurrentLoad}
+            onError={() => {
+              failedImageRef.current = imageUrl;
+              setCurrentImage(null);
+              setShowFallback(true);
+            }}
+          />
+        </div>
+      )}
 
       {/* Incoming image (during transition) */}
       {nextImage && (

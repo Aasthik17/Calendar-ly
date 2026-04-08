@@ -7,9 +7,9 @@ export const HERO_IMAGES: Record<number, { url: string; alt: string; photographe
     photographer: 'Aaron Burden',
   },
   2:  {
-    url: 'https://images.unsplash.com/photo-1548678798-c6c10a9a06ed?auto=format&fit=crop&w=900&q=80',
-    alt: 'Close-up of frost crystals on a windowpane, soft bokeh background',
-    photographer: 'Aaron Burden',
+    url: 'https://images.unsplash.com/photo-1770130864594-21ca0e026e82?auto=format&fit=crop&w=900&q=80',
+    alt: 'Close-up of frost patterns on a window pane',
+    photographer: 'Yaraslau Barjeyeu',
   },
   3:  {
     url: 'https://images.unsplash.com/photo-1522748906645-95d8adfd52c7?auto=format&fit=crop&w=900&q=80',

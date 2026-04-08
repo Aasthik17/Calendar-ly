@@ -17,6 +17,7 @@ type SelectionAction =
   | { type: 'DRAG_START'; date: CalendarDate }
   | { type: 'DRAG_MOVE'; date: CalendarDate }
   | { type: 'DRAG_END' }
+  | { type: 'SET_START'; date: CalendarDate }
   | { type: 'CLEAR' };
 
 function selectionReducer(state: SelectionState, action: SelectionAction): SelectionState {
@@ -62,6 +63,9 @@ function selectionReducer(state: SelectionState, action: SelectionAction): Selec
       return { phase: 'range_set', start, end, previewEnd: null, isDragging: false };
     }
 
+    case 'SET_START':
+      return { ...initialSelectionState, phase: 'start_set', start: action.date };
+
     case 'CLEAR':
       return initialSelectionState;
 
@@ -74,46 +78,64 @@ export function useRangeSelection() {
   const [selection, dispatch] = useReducer(selectionReducer, initialSelectionState);
   const pointerDownRef = useRef<CalendarDate | null>(null);
   const hasDraggedRef = useRef(false);
+  const suppressClickRef = useRef(false);
 
   const onCellClick = useCallback((date: CalendarDate) => {
-    // If user actually dragged (pointer moved to a different cell), skip click
-    if (hasDraggedRef.current) {
+    if (suppressClickRef.current) {
+      suppressClickRef.current = false;
       hasDraggedRef.current = false;
       return;
     }
+
     dispatch({ type: 'CLICK', date });
   }, []);
 
   const onCellPointerDown = useCallback((date: CalendarDate) => {
     pointerDownRef.current = date;
     hasDraggedRef.current = false;
-    // We don't dispatch DRAG_START yet — we wait until the pointer moves
-    // to distinguish click from drag
-  }, []);
+    suppressClickRef.current = false;
+
+    if (selection.phase !== 'start_set') {
+      dispatch({ type: 'DRAG_START', date });
+      suppressClickRef.current = true;
+    }
+  }, [selection.phase]);
 
   const onCellPointerEnter = useCallback((date: CalendarDate) => {
-    if (!pointerDownRef.current) return; // Not in a pointer-down state
+    if (!pointerDownRef.current) return;
 
-    // First move — start the drag
     if (!hasDraggedRef.current) {
       hasDraggedRef.current = true;
-      dispatch({ type: 'DRAG_START', date: pointerDownRef.current });
+      suppressClickRef.current = true;
+
+      if (!selection.isDragging) {
+        dispatch({ type: 'DRAG_START', date: pointerDownRef.current });
+      }
     }
 
     dispatch({ type: 'DRAG_MOVE', date });
-  }, []);
+  }, [selection.isDragging]);
 
   const onCellPointerUp = useCallback(() => {
-    if (hasDraggedRef.current) {
+    if (selection.isDragging) {
       dispatch({ type: 'DRAG_END' });
     }
+
     pointerDownRef.current = null;
-  }, []);
+  }, [selection.isDragging]);
 
   const clearSelection = useCallback(() => {
     dispatch({ type: 'CLEAR' });
     pointerDownRef.current = null;
     hasDraggedRef.current = false;
+    suppressClickRef.current = false;
+  }, []);
+
+  const setSelectionStart = useCallback((date: CalendarDate) => {
+    dispatch({ type: 'SET_START', date });
+    pointerDownRef.current = null;
+    hasDraggedRef.current = false;
+    suppressClickRef.current = false;
   }, []);
 
   return {
@@ -123,5 +145,6 @@ export function useRangeSelection() {
     onCellPointerEnter,
     onCellPointerUp,
     clearSelection,
+    setSelectionStart,
   };
 }

@@ -1,5 +1,6 @@
 .panel {
-  background-color: var(--color-surface);
+  background-color: var(--color-note-bg);
+  border-top: 1px solid var(--color-ink-faint);
   padding: var(--space-md);
   display: flex;
   flex-direction: column;
@@ -46,7 +47,7 @@
 }
 
 .clearBtn:hover {
-  background-color: rgba(28, 25, 23, 0.1);
+  background-color: var(--color-ink-primary-10);
   color: var(--color-ink-primary);
 }
 
@@ -56,6 +57,7 @@
   flex-direction: column;
   gap: var(--space-xs);
   overflow: hidden;
+  max-height: 32rem;
   transition: max-height var(--duration-panel) ease-in-out,
               opacity var(--duration-panel) ease-in-out;
 }
@@ -182,7 +184,7 @@
 .drawerToggle {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
   gap: var(--space-sm);
   width: 100%;
   padding: var(--space-md);
@@ -190,6 +192,17 @@
   font-size: 0.875rem;
   font-weight: 500;
   color: var(--color-ink-primary);
+  text-align: left;
+}
+
+.drawerToggleLabel {
+  flex: 1;
+  min-width: 0;
+}
+
+.drawerToggleIcon {
+  font-size: 1rem;
+  color: var(--color-ink-secondary);
 }
 
 .drawerHandle {
@@ -205,6 +218,10 @@
 
 .drawerContent {
   padding: 0 var(--space-md) var(--space-md);
+}
+
+.drawerNoteSection {
+  margin-top: var(--space-sm);
 }
 
 @media (min-width: 768px) {

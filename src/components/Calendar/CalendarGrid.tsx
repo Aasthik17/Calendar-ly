@@ -11,6 +11,8 @@ type CalendarGridProps = {
   days: CalendarDay[];
   viewMonth: ViewMonth;
   navDirection: NavDirection;
+  focusDate: CalendarDate | null;
+  onFocusDateApplied: () => void;
   onPrevMonth: () => void;
   onNextMonth: () => void;
   onToday: () => void;
@@ -20,13 +22,15 @@ type CalendarGridProps = {
   onCellPointerUp: () => void;
   clearSelection: () => void;
   selection: SelectionState;
-  onNavigateToDate: (date: CalendarDate) => void;
+  onNavigateToDate: (date: CalendarDate, shouldSelectStart?: boolean) => void;
 };
 
 export default function CalendarGrid({
   days,
   viewMonth,
   navDirection,
+  focusDate,
+  onFocusDateApplied,
   onPrevMonth,
   onNextMonth,
   onToday,
@@ -40,7 +44,6 @@ export default function CalendarGrid({
 }: CalendarGridProps) {
   const [animClass, setAnimClass] = useState('');
   const gridRef = useRef<HTMLDivElement>(null);
-  const focusIndexRef = useRef<number>(-1);
 
   // Month transition animation
   useEffect(() => {
@@ -56,11 +59,24 @@ export default function CalendarGrid({
     return () => clearTimeout(timer);
   }, [navDirection, viewMonth]);
 
+  useEffect(() => {
+    if (!focusDate) return;
+    if (focusDate.year !== viewMonth.year || focusDate.month !== viewMonth.month) return;
+
+    const dateKey = `${focusDate.year}-${String(focusDate.month).padStart(2, '0')}-${String(focusDate.day).padStart(2, '0')}`;
+    const button = gridRef.current?.querySelector<HTMLButtonElement>(`[data-date="${dateKey}"]`);
+
+    if (button) {
+      button.focus();
+      onFocusDateApplied();
+    }
+  }, [focusDate, viewMonth, onFocusDateApplied]);
+
   // Handle clicking an other-month date
   const handleCellClick = useCallback((date: CalendarDate) => {
     const isOtherMonth = date.month !== viewMonth.month || date.year !== viewMonth.year;
     if (isOtherMonth) {
-      onNavigateToDate(date);
+      onNavigateToDate(date, true);
       return;
     }
     onCellClick(date);
@@ -117,25 +133,15 @@ export default function CalendarGrid({
     }
 
     if (newIndex !== currentIndex) {
-      cellArray[newIndex].focus();
-      focusIndexRef.current = newIndex;
+      const nextDate = days[newIndex]?.date;
 
-      // Check if focus moved to an other-month cell
-      const dateAttr = cellArray[newIndex].getAttribute('data-date');
-      if (dateAttr) {
-        const [y, m] = dateAttr.split('-').map(Number);
-        if (m !== viewMonth.month || y !== viewMonth.year) {
-          // Navigate to that month
-          const date: CalendarDate = {
-            year: y,
-            month: m,
-            day: parseInt(dateAttr.split('-')[2]),
-          };
-          onNavigateToDate(date);
-        }
+      if (nextDate && (nextDate.month !== viewMonth.month || nextDate.year !== viewMonth.year)) {
+        onNavigateToDate(nextDate, false);
+      } else {
+        cellArray[newIndex].focus();
       }
     }
-  }, [clearSelection, viewMonth, onNavigateToDate]);
+  }, [clearSelection, days, viewMonth, onNavigateToDate]);
 
   return (
     <div className={styles.gridWrapper}>
@@ -153,7 +159,8 @@ export default function CalendarGrid({
         onPointerUp={onCellPointerUp}
       >
         <div
-          className={`${styles.grid} ${animClass} ${selection.isDragging ? 'dragActive' : ''}`}
+          className={`${styles.grid} ${animClass}`}
+          data-dragging={selection.isDragging ? 'true' : 'false'}
           role="grid"
           aria-label="Calendar dates"
         >

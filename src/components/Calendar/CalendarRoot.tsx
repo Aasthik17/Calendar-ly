@@ -15,9 +15,14 @@ import styles from './CalendarRoot.module.css';
 
 export default function CalendarRoot() {
   const [viewMonth, setViewMonth] = useState<ViewMonth>(getCurrentViewMonth);
+  const [heroMonth, setHeroMonth] = useState<ViewMonth>(getCurrentViewMonth);
   const [navDirection, setNavDirection] = useState<NavDirection>(null);
-  const navQueueRef = useRef<boolean>(false);
+  const [focusDate, setFocusDate] = useState<CalendarDate | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const navTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const queuedDirectionRef = useRef<NavDirection>(null);
+  const isNavigatingRef = useRef(false);
+  const viewMonthRef = useRef(viewMonth);
 
   const {
     selection,
@@ -26,7 +31,9 @@ export default function CalendarRoot() {
     onCellPointerEnter,
     onCellPointerUp,
     clearSelection,
+    setSelectionStart,
   } = useRangeSelection();
+  const previousPhaseRef = useRef(selection.phase);
 
   const {
     getNoteForMonth,
@@ -37,8 +44,20 @@ export default function CalendarRoot() {
     savedKey,
   } = useNotes();
 
+  useEffect(() => {
+    viewMonthRef.current = viewMonth;
+  }, [viewMonth]);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      setHeroMonth(viewMonth);
+    }, 300);
+
+    return () => window.clearTimeout(timer);
+  }, [viewMonth]);
+
   // Hero image for current month
-  const heroImage = HERO_IMAGES[viewMonth.month] || HERO_IMAGES[1];
+  const heroImage = HERO_IMAGES[heroMonth.month] || HERO_IMAGES[1];
 
   // Dominant color extraction
   const dominantColor = useDominantColor(heroImage.url);
@@ -60,6 +79,8 @@ export default function CalendarRoot() {
 
   // Announce selection changes
   useEffect(() => {
+    const previousPhase = previousPhaseRef.current;
+
     if (selection.phase === 'start_set' && selection.start && !selection.isDragging) {
       const label = formatDateLabel(selection.start);
       setAnnouncement(`Start date set. ${label}. Now select an end date.`);
@@ -68,47 +89,118 @@ export default function CalendarRoot() {
       const endLabel = formatDateLabel(selection.end);
       const days = countDaysInRange(selection.start, selection.end);
       setAnnouncement(`Range selected. ${startLabel} to ${endLabel}. ${days} days.`);
-    } else if (selection.phase === 'idle') {
-      // Only announce clear if there was a previous selection
+    } else if (selection.phase === 'idle' && previousPhase !== 'idle') {
       setAnnouncement('Selection cleared.');
     }
+
+    previousPhaseRef.current = selection.phase;
   }, [selection.phase, selection.start, selection.end, selection.isDragging]);
+
+  const stopNavigationQueue = useCallback(() => {
+    isNavigatingRef.current = false;
+    queuedDirectionRef.current = null;
+
+    if (navTimerRef.current) {
+      clearTimeout(navTimerRef.current);
+      navTimerRef.current = null;
+    }
+  }, []);
+
+  const startNavigation = useCallback((direction: 'prev' | 'next') => {
+    const nextMonth = addMonths(viewMonthRef.current, direction === 'next' ? 1 : -1);
+
+    viewMonthRef.current = nextMonth;
+    isNavigatingRef.current = true;
+    setNavDirection(direction);
+    setViewMonth(nextMonth);
+    setFocusDate({ year: nextMonth.year, month: nextMonth.month, day: 1 });
+
+    if (navTimerRef.current) {
+      clearTimeout(navTimerRef.current);
+    }
+
+    navTimerRef.current = setTimeout(() => {
+      const queuedDirection = queuedDirectionRef.current;
+      queuedDirectionRef.current = null;
+
+      if (queuedDirection) {
+        startNavigation(queuedDirection);
+        return;
+      }
+
+      isNavigatingRef.current = false;
+      setNavDirection(null);
+      navTimerRef.current = null;
+    }, 300);
+  }, []);
 
   // Month navigation
   const navigateMonth = useCallback((direction: 'prev' | 'next') => {
-    if (navQueueRef.current) return; // Debounce rapid clicks
-    navQueueRef.current = true;
+    if (isNavigatingRef.current) {
+      if (!queuedDirectionRef.current) {
+        queuedDirectionRef.current = direction;
+      }
+      return;
+    }
 
-    setNavDirection(direction);
-    setViewMonth(prev => addMonths(prev, direction === 'next' ? 1 : -1));
-
-    setTimeout(() => {
-      navQueueRef.current = false;
-    }, 300);
-  }, []);
+    startNavigation(direction);
+  }, [startNavigation]);
 
   const handlePrevMonth = useCallback(() => navigateMonth('prev'), [navigateMonth]);
   const handleNextMonth = useCallback(() => navigateMonth('next'), [navigateMonth]);
 
   const handleToday = useCallback(() => {
     const current = getCurrentViewMonth();
-    if (current.year === viewMonth.year && current.month === viewMonth.month) return;
+    const activeViewMonth = viewMonthRef.current;
 
-    const direction = (current.year * 12 + current.month) > (viewMonth.year * 12 + viewMonth.month)
+    if (current.year === activeViewMonth.year && current.month === activeViewMonth.month) return;
+
+    stopNavigationQueue();
+
+    const direction = (current.year * 12 + current.month) > (activeViewMonth.year * 12 + activeViewMonth.month)
       ? 'next' : 'prev';
+
     setNavDirection(direction);
     setViewMonth(current);
-  }, [viewMonth]);
+    viewMonthRef.current = current;
+    setFocusDate({ year: current.year, month: current.month, day: 1 });
+    navTimerRef.current = setTimeout(() => {
+      setNavDirection(null);
+      navTimerRef.current = null;
+    }, 300);
+  }, [stopNavigationQueue]);
 
-  // Handle navigating to an other-month date
-  const handleNavigateToDate = useCallback((date: CalendarDate) => {
-    const direction = (date.year * 12 + date.month) > (viewMonth.year * 12 + viewMonth.month)
+  const handleNavigateToDate = useCallback((date: CalendarDate, shouldSelectStart = true) => {
+    const activeViewMonth = viewMonthRef.current;
+    const targetMonth = { year: date.year, month: date.month };
+
+    if (shouldSelectStart) {
+      setSelectionStart(date);
+    }
+
+    if (targetMonth.year === activeViewMonth.year && targetMonth.month === activeViewMonth.month) {
+      setFocusDate(date);
+      return;
+    }
+
+    stopNavigationQueue();
+
+    const direction = (date.year * 12 + date.month) > (activeViewMonth.year * 12 + activeViewMonth.month)
       ? 'next' : 'prev';
+
     setNavDirection(direction as NavDirection);
-    setViewMonth({ year: date.year, month: date.month });
-    // Set as selection start
-    onCellClick(date);
-  }, [viewMonth, onCellClick]);
+    setViewMonth(targetMonth);
+    viewMonthRef.current = targetMonth;
+    setFocusDate(date);
+    navTimerRef.current = setTimeout(() => {
+      setNavDirection(null);
+      navTimerRef.current = null;
+    }, 300);
+  }, [setSelectionStart, stopNavigationQueue]);
+
+  const handleFocusDateApplied = useCallback(() => {
+    setFocusDate(null);
+  }, []);
 
   // Global keyboard handler for month navigation
   useEffect(() => {
@@ -153,6 +245,12 @@ export default function CalendarRoot() {
     return () => document.removeEventListener('pointerup', handlePointerUp);
   }, [selection.isDragging, onCellPointerUp]);
 
+  useEffect(() => {
+    return () => {
+      stopNavigationQueue();
+    };
+  }, [stopNavigationQueue]);
+
   return (
     <div
       className={styles.root}
@@ -164,8 +262,8 @@ export default function CalendarRoot() {
       <HeroPanel
         imageUrl={heroImage.url}
         imageAlt={heroImage.alt}
-        monthName={MONTH_NAMES_FULL[viewMonth.month - 1]}
-        year={viewMonth.year}
+        monthName={MONTH_NAMES_FULL[heroMonth.month - 1]}
+        year={heroMonth.year}
       />
 
       {/* Right panel: grid + notes */}
@@ -174,6 +272,8 @@ export default function CalendarRoot() {
           days={days}
           viewMonth={viewMonth}
           navDirection={navDirection}
+          focusDate={focusDate}
+          onFocusDateApplied={handleFocusDateApplied}
           onPrevMonth={handlePrevMonth}
           onNextMonth={handleNextMonth}
           onToday={handleToday}

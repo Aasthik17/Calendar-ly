@@ -1,14 +1,13 @@
 .root {
+  position: relative;
   display: grid;
   grid-template-columns: 45fr 55fr;
   max-width: var(--calendar-max-width);
   width: 100%;
   background-color: var(--color-surface);
   border-radius: 12px;
+  border: 1px solid var(--color-ink-faint);
   overflow: hidden;
-  box-shadow:
-    0 1px 3px rgba(28, 25, 23, 0.06),
-    0 4px 12px rgba(28, 25, 23, 0.04);
 }
 
 .rightPanel {

@@ -4,9 +4,9 @@ import { useState, useRef, useCallback, useEffect } from 'react';
 import { ViewMonth, SelectionState, CalendarDate } from '@/types/calendar';
 import {
   MONTH_NAMES_FULL,
-  MONTH_NAMES_SHORT,
   toMonthKey,
   toRangeKey,
+  formatRangeLabel,
   formatRangeSummary,
   countDaysInRange,
 } from '@/utils/dateHelpers';
@@ -48,8 +48,10 @@ export default function NotesPanel({
 
   const rangeKey = hasRange ? toRangeKey(selection.start!, selection.end!) : '';
   const rangeNote = hasRange ? getNoteForRange(selection.start!, selection.end!) : '';
+  const rangeLabel = hasRange ? formatRangeLabel(selection.start!, selection.end!) : '';
   const rangeSummary = hasRange ? formatRangeSummary(selection.start!, selection.end!) : '';
   const rangeDays = hasRange ? countDaysInRange(selection.start!, selection.end!) : 0;
+  const savedNotesCount = Number(monthNote.trim().length > 0) + Number(hasRange && rangeNote.trim().length > 0);
 
   // Autogrow textarea
   const autoGrow = useCallback((el: HTMLTextAreaElement | null) => {
@@ -99,10 +101,11 @@ export default function NotesPanel({
   const showRangeCounter = rangeRemaining <= COUNTER_THRESHOLD;
   const rangeCounterClass = getCounterClass(rangeRemaining);
 
-  // Drawer label
-  const drawerLabel = hasRange
-    ? `${MONTH_NAMES_SHORT[selection.start!.month - 1]} ${selection.start!.day} – ${MONTH_NAMES_SHORT[selection.end!.month - 1]} ${selection.end!.day}`
-    : monthNote ? `Notes for ${monthName}` : `Add notes for ${monthName}`;
+  const drawerSummary = hasRange
+    ? `${rangeLabel} • ${savedNotesCount > 0 ? `${savedNotesCount} note${savedNotesCount === 1 ? '' : 's'} saved` : 'No notes yet'}`
+    : monthNote.trim()
+      ? `${monthName} ${viewMonth.year} • 1 note saved`
+      : `Add notes for ${monthName}`;
 
   return (
     <>
@@ -130,9 +133,7 @@ export default function NotesPanel({
         <div className={`${styles.noteSection} ${!hasRange ? styles.noteSectionHidden : ''}`}>
           <div className={styles.noteHeader}>
             <span className={styles.noteLabel}>
-              {hasRange
-                ? `${MONTH_NAMES_SHORT[selection.start!.month - 1]} ${selection.start!.day} – ${MONTH_NAMES_SHORT[selection.end!.month - 1]} ${selection.end!.day}`
-                : ''}
+              {hasRange ? rangeLabel : ''}
             </span>
             <span className={`${styles.savedIndicator} ${savedKey === rangeKey ? styles.savedIndicatorVisible : ''}`}>
               ✓ Saved
@@ -146,7 +147,7 @@ export default function NotesPanel({
             onBlur={handleRangeBlur}
             placeholder="Notes for this period…"
             maxLength={RANGE_NOTE_MAX}
-            aria-label={hasRange ? `Notes for ${rangeSummary}` : 'Range notes'}
+            aria-label={hasRange ? `Notes for ${rangeLabel}` : 'Range notes'}
           />
           <div className={`${styles.charCounter} ${showRangeCounter ? styles.charCounterVisible : ''} ${rangeCounterClass}`}>
             {rangeRemaining} left
@@ -190,7 +191,8 @@ export default function NotesPanel({
           type="button"
           aria-label={drawerOpen ? 'Close notes' : 'Notes'}
         >
-          📝 {drawerOpen ? 'Close notes' : drawerLabel}
+          <span className={styles.drawerToggleLabel}>{drawerOpen ? 'Close notes' : drawerSummary}</span>
+          <span className={styles.drawerToggleIcon} aria-hidden="true">{drawerOpen ? '−' : '+'}</span>
         </button>
         {drawerOpen && (
           <div className={styles.drawerContent}>
@@ -211,10 +213,13 @@ export default function NotesPanel({
                     ×
                   </button>
                 </div>
-                <div className={styles.noteSection} style={{ marginTop: '0.5rem' }}>
-                  <span className={styles.noteLabel}>
-                    {MONTH_NAMES_SHORT[selection.start!.month - 1]} {selection.start!.day} – {MONTH_NAMES_SHORT[selection.end!.month - 1]} {selection.end!.day}
-                  </span>
+                <div className={`${styles.noteSection} ${styles.drawerNoteSection}`}>
+                  <div className={styles.noteHeader}>
+                    <span className={styles.noteLabel}>{rangeLabel}</span>
+                    <span className={`${styles.savedIndicator} ${savedKey === rangeKey ? styles.savedIndicatorVisible : ''}`}>
+                      ✓ Saved
+                    </span>
+                  </div>
                   <textarea
                     className={styles.textarea}
                     value={rangeNote}
@@ -222,6 +227,7 @@ export default function NotesPanel({
                     onBlur={handleRangeBlur}
                     placeholder="Notes for this period…"
                     maxLength={RANGE_NOTE_MAX}
+                    aria-label={`Notes for ${rangeLabel}`}
                   />
                 </div>
                 <div className={styles.divider} />
@@ -229,10 +235,15 @@ export default function NotesPanel({
             )}
 
             {/* Month note in drawer */}
-            <div className={styles.noteSection} style={{ marginTop: hasRange ? '0.5rem' : 0 }}>
-              <span className={styles.noteLabel}>
-                {monthName} {viewMonth.year}
-              </span>
+            <div className={`${styles.noteSection} ${hasRange ? styles.drawerNoteSection : ''}`}>
+              <div className={styles.noteHeader}>
+                <span className={styles.noteLabel}>
+                  {monthName} {viewMonth.year}
+                </span>
+                <span className={`${styles.savedIndicator} ${savedKey === monthKey ? styles.savedIndicatorVisible : ''}`}>
+                  ✓ Saved
+                </span>
+              </div>
               <textarea
                 className={styles.textarea}
                 value={monthNote}
@@ -240,6 +251,7 @@ export default function NotesPanel({
                 onBlur={handleMonthBlur}
                 placeholder={`Notes for ${monthName}…`}
                 maxLength={MONTH_NOTE_MAX}
+                aria-label={`Notes for ${monthName} ${viewMonth.year}`}
               />
             </div>
           </div>

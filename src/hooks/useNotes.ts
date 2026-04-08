@@ -44,19 +44,20 @@ export function useNotes() {
   }, []);
 
   // Persist on changes (debounced)
-  const persistNotes = useCallback((updatedNotes: NotesStore) => {
+  const persistNotes = useCallback((key: string, updatedNotes: NotesStore) => {
     if (debounceRef.current) {
       clearTimeout(debounceRef.current);
     }
     debounceRef.current = setTimeout(() => {
       saveNotesToStorage(updatedNotes);
+      setSavedKey(key);
     }, DEBOUNCE_MS);
   }, []);
 
   const setNote = useCallback((key: string, value: string) => {
     setNotes(prev => {
       const updated = { ...prev, [key]: value };
-      persistNotes(updated);
+      persistNotes(key, updated);
       return updated;
     });
   }, [persistNotes]);

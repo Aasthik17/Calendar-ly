@@ -91,34 +91,42 @@ function deriveCellState(
 ): CalendarDay['cellState'] {
   const { phase, start, end, previewEnd, isDragging } = selection;
 
-  // Determine the effective start/end for range checking
-  let effectiveStart = start;
-  let effectiveEnd = end;
+  if (start && isDragging && previewEnd) {
+    const [previewStart, previewFinish] = sortDates(start, previewEnd);
 
-  if (phase === 'start_set' && isDragging && previewEnd && start) {
-    [effectiveStart, effectiveEnd] = sortDates(start, previewEnd);
-  }
-
-  // Check range states (highest priority)
-  if (effectiveStart && effectiveEnd) {
-    const [s, e] = sortDates(effectiveStart, effectiveEnd);
-
-    if (isSameDate(s, e) && isSameDate(date, s)) {
+    if (isSameDate(previewStart, previewFinish) && isSameDate(date, previewStart)) {
       return 'range-start-end';
     }
-    if (isSameDate(date, s)) {
+    if (isSameDate(date, previewStart)) {
       return 'range-start';
     }
-    if (isSameDate(date, e)) {
-      return isDragging ? 'in-range-preview' : 'range-end';
+    if (isSameDate(date, previewFinish)) {
+      return 'range-end';
     }
-    if (isDateInRange(date, s, e)) {
-      return isDragging ? 'in-range-preview' : 'in-range';
+    if (isDateInRange(date, previewStart, previewFinish)) {
+      return 'in-range-preview';
+    }
+  }
+
+  if (start && end) {
+    const [confirmedStart, confirmedEnd] = sortDates(start, end);
+
+    if (isSameDate(confirmedStart, confirmedEnd) && isSameDate(date, confirmedStart)) {
+      return 'range-start-end';
+    }
+    if (isSameDate(date, confirmedStart)) {
+      return 'range-start';
+    }
+    if (isSameDate(date, confirmedEnd)) {
+      return 'range-end';
+    }
+    if (isDateInRange(date, confirmedStart, confirmedEnd)) {
+      return 'in-range';
     }
   }
 
   // Single start set (no end yet, no drag preview)
-  if (effectiveStart && !effectiveEnd && isSameDate(date, effectiveStart)) {
+  if (phase === 'start_set' && start && isSameDate(date, start)) {
     return 'range-start';
   }
 
