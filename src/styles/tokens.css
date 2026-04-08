@@ -36,9 +36,12 @@
   --shadow-hero-label:
     0 1px 3px color-mix(in srgb, var(--color-ink-primary) 35%, transparent),
     0 4px 16px color-mix(in srgb, var(--color-ink-primary) 20%, transparent);
+  --shadow-brand:
+    0 1px 0 color-mix(in srgb, var(--color-surface) 70%, transparent),
+    0 10px 24px color-mix(in srgb, var(--color-ink-primary) 10%, transparent);
 
   /* ---- Typography ---- */
-  --font-serif-display:  var(--font-dm-serif-display);
+  --font-serif-display:  var(--font-noto-serif);
   --font-sans:           var(--font-dm-sans);
   --font-serif-body:     var(--font-lora);
 
