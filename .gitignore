@@ -1,0 +1,15 @@
+node_modules/
+.next/
+out/
+.npm-cache/
+node-v20.18.0-darwin-arm64/
+node.tar.gz
+.DS_Store
+*.tsbuildinfo
+next-env.d.ts
+AGENT_PROMPT.md
+ARCHITECTURE.md
+CONTENT.md
+DESIGN.md
+INTERACTIONS.md
+Frontend Engineering Challenge_ Interactive Calendar Component.docx

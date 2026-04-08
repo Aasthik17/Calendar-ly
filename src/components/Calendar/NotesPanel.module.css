@@ -1,0 +1,220 @@
+.panel {
+  background-color: var(--color-surface);
+  padding: var(--space-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+/* ---- Range Summary Bar ---- */
+.rangeSummary {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-ink-primary);
+  padding: var(--space-sm) var(--space-md);
+  background-color: var(--color-accent-muted);
+  border-radius: 8px;
+  transition: height var(--duration-panel) ease-in-out,
+              opacity var(--duration-panel) ease-in-out;
+}
+
+.rangeDates {
+  flex: 1;
+}
+
+.rangeDays {
+  font-weight: 400;
+  color: var(--color-ink-secondary);
+  font-size: 0.8125rem;
+}
+
+.clearBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  font-size: 1.1rem;
+  color: var(--color-ink-secondary);
+  transition: background-color var(--duration-hover) ease,
+              color var(--duration-hover) ease;
+}
+
+.clearBtn:hover {
+  background-color: rgba(28, 25, 23, 0.1);
+  color: var(--color-ink-primary);
+}
+
+/* ---- Note Section ---- */
+.noteSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  overflow: hidden;
+  transition: max-height var(--duration-panel) ease-in-out,
+              opacity var(--duration-panel) ease-in-out;
+}
+
+.noteSectionHidden {
+  max-height: 0;
+  opacity: 0;
+  margin: 0;
+  padding: 0;
+}
+
+.noteHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.noteLabel {
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-ink-primary);
+}
+
+.savedIndicator {
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: var(--color-anchor);
+  opacity: 0;
+  transition: opacity 300ms ease;
+}
+
+.savedIndicatorVisible {
+  opacity: 1;
+}
+
+/* ---- Textarea (Ruled notepad) ---- */
+.textarea {
+  width: 100%;
+  min-height: 7rem; /* 4 lines × 1.75rem */
+  background-color: var(--color-note-bg);
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent,
+    transparent calc(1.75rem - 1px),
+    var(--color-note-line) calc(1.75rem - 1px),
+    var(--color-note-line) 1.75rem
+  );
+  background-size: 100% 1.75rem;
+  line-height: 1.75rem;
+  padding: 0 0.75rem;
+  border: none;
+  border-left: 2px solid var(--color-accent);
+  resize: none;
+  font-family: var(--font-serif-body);
+  font-size: 0.9375rem;
+  font-weight: 400;
+  color: var(--color-ink-primary);
+  outline: none;
+  overflow: hidden;
+}
+
+.textarea::placeholder {
+  font-style: italic;
+  color: var(--color-ink-secondary);
+}
+
+.textarea:focus-visible {
+  outline: none;
+  border-left-color: var(--color-anchor);
+}
+
+/* ---- Character Counter ---- */
+.charCounter {
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: var(--color-ink-secondary);
+  text-align: right;
+  opacity: 0;
+  transition: opacity 200ms ease, color 200ms ease;
+}
+
+.charCounterVisible {
+  opacity: 1;
+}
+
+.charCounterWarning {
+  color: var(--color-accent);
+}
+
+.charCounterDanger {
+  color: var(--color-warning);
+}
+
+/* ---- Divider ---- */
+.divider {
+  height: 1px;
+  background-color: var(--color-ink-faint);
+  margin: var(--space-xs) 0;
+}
+
+/* ---- Mobile Drawer ---- */
+.drawer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: var(--color-surface);
+  border-top: 1px solid var(--color-ink-faint);
+  border-radius: 16px 16px 0 0;
+  z-index: 100;
+  transition: max-height var(--duration-panel) ease-in-out;
+  max-height: 52px;
+  overflow: hidden;
+}
+
+.drawerOpen {
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.drawerToggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  width: 100%;
+  padding: var(--space-md);
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-ink-primary);
+}
+
+.drawerHandle {
+  width: 32px;
+  height: 4px;
+  border-radius: 2px;
+  background-color: var(--color-ink-faint);
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.drawerContent {
+  padding: 0 var(--space-md) var(--space-md);
+}
+
+@media (min-width: 768px) {
+  .drawer {
+    display: none;
+  }
+}
+
+@media (max-width: 767px) {
+  .panel {
+    display: none;
+  }
+}

@@ -1,0 +1,60 @@
+.gridWrapper {
+  padding: 0 var(--space-md) var(--space-sm);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0;
+}
+
+/* Transition wrapper for month transitions */
+.gridTransition {
+  position: relative;
+  overflow: hidden;
+}
+
+.gridContent {
+  transition: transform var(--duration-month-in) var(--ease-default),
+              opacity var(--duration-month-in) var(--ease-default);
+}
+
+.slideOutLeft {
+  transform: translateX(-12px);
+  opacity: 0;
+}
+
+.slideOutRight {
+  transform: translateX(12px);
+  opacity: 0;
+}
+
+.slideInLeft {
+  animation: slideFromLeft var(--duration-month-in) var(--ease-default) forwards;
+}
+
+.slideInRight {
+  animation: slideFromRight var(--duration-month-in) var(--ease-default) forwards;
+}
+
+@keyframes slideFromLeft {
+  from {
+    transform: translateX(-12px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideFromRight {
+  from {
+    transform: translateX(12px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}

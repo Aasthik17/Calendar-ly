@@ -1,0 +1,242 @@
+.cell {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1;
+  min-width: var(--cell-size-desktop);
+  min-height: var(--cell-size-desktop);
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-ink-primary);
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  border-radius: 0;
+  transition: background-color var(--duration-hover) ease;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+  z-index: 1;
+}
+
+/* Number sits above the range fill pseudo-element */
+.number {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  transition: background-color var(--duration-range) ease-out,
+              color var(--duration-range) ease-out;
+}
+
+/* ---- Range fill band (::before pseudo-element) ---- */
+.cell::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 40px;
+  transform: translateY(-50%);
+  background-color: transparent;
+  transition: background-color var(--duration-range) ease-out;
+  z-index: 1;
+}
+
+/* ---- Marker dots container ---- */
+.markers {
+  position: absolute;
+  bottom: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 3px;
+  z-index: 3;
+}
+
+.holidayDot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background-color: var(--color-accent);
+}
+
+.holidayDotObservance {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background-color: var(--color-ink-secondary);
+  opacity: 0.6;
+}
+
+.noteDot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background-color: var(--color-anchor);
+}
+
+/* ---- Holiday tooltip ---- */
+.tooltip {
+  position: absolute;
+  bottom: calc(100% + 4px);
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: var(--color-ink-primary);
+  color: var(--color-surface);
+  font-family: var(--font-sans);
+  font-size: 0.6875rem;
+  font-weight: 400;
+  padding: 4px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--duration-hover) ease;
+  z-index: 10;
+}
+
+.cell:hover .tooltip {
+  opacity: 1;
+}
+
+/* ===== VISUAL STATES ===== */
+
+/* Default hover */
+.cell:hover .number {
+  background-color: var(--color-ink-faint);
+}
+
+/* Today */
+.cellToday .number {
+  color: var(--color-anchor);
+  font-weight: 600;
+  border: 2px solid var(--color-anchor);
+}
+
+/* Disabled / past */
+.cellDisabled {
+  color: var(--color-ink-faint);
+}
+
+.cellDisabled .number {
+  color: var(--color-ink-faint);
+}
+
+/* Other month */
+.cellOtherMonth {
+  color: var(--color-ink-faint);
+}
+
+.cellOtherMonth .number {
+  color: var(--color-ink-faint);
+}
+
+/* ---- Range Start ---- */
+.cellRangeStart .number {
+  background-color: var(--color-anchor);
+  color: var(--color-surface);
+  font-weight: 600;
+}
+
+.cellRangeStart::before {
+  background-color: var(--color-accent-muted);
+  border-radius: 50% 0 0 50%;
+  left: 0;
+}
+
+/* When start is at the edge, only round left */
+.cellRangeStart:hover .number {
+  background-color: var(--color-anchor);
+}
+
+/* ---- Range End ---- */
+.cellRangeEnd .number {
+  background-color: var(--color-accent);
+  color: var(--color-surface);
+  font-weight: 600;
+}
+
+.cellRangeEnd::before {
+  background-color: var(--color-accent-muted);
+  border-radius: 0 50% 50% 0;
+  right: 0;
+}
+
+.cellRangeEnd:hover .number {
+  background-color: var(--color-accent);
+}
+
+/* ---- Range Start = End (single day selection) ---- */
+.cellRangeStartEnd .number {
+  background-color: var(--color-anchor);
+  color: var(--color-surface);
+  font-weight: 600;
+}
+
+.cellRangeStartEnd::before {
+  background-color: transparent;
+}
+
+.cellRangeStartEnd:hover .number {
+  background-color: var(--color-anchor);
+}
+
+/* ---- In Range ---- */
+.cellInRange::before {
+  background-color: var(--color-accent-muted);
+}
+
+.cellInRange .number {
+  color: var(--color-ink-primary);
+}
+
+.cellInRange:hover .number {
+  background-color: rgba(192, 85, 58, 0.15);
+}
+
+/* ---- In Range Preview (during drag) ---- */
+.cellInRangePreview::before {
+  background-color: var(--color-accent-muted);
+  opacity: 0.6;
+}
+
+.cellInRangePreview .number {
+  color: var(--color-ink-primary);
+}
+
+/* Suppress hover state during drag */
+.dragActive .cell:hover .number {
+  background-color: transparent;
+}
+
+/* ---- Focus ring ---- */
+.cell:focus-visible .number {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
+
+/* ---- Mobile sizes ---- */
+@media (max-width: 767px) {
+  .cell {
+    min-width: var(--cell-size-mobile);
+    min-height: var(--cell-size-mobile);
+  }
+
+  .number {
+    width: 36px;
+    height: 36px;
+    font-size: 0.875rem;
+  }
+
+  .cell::before {
+    height: 36px;
+  }
+}

@@ -1,0 +1,77 @@
+.nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-sm) var(--space-md);
+  user-select: none;
+}
+
+.monthYear {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.monthName {
+  font-family: var(--font-serif-display);
+  font-size: 1.5rem;
+  font-weight: 400;
+  color: var(--color-ink-primary);
+  line-height: 1.2;
+}
+
+.year {
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  font-weight: 400;
+  color: var(--color-ink-secondary);
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.arrowBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  font-size: 1.25rem;
+  color: var(--color-ink-primary);
+  transition: background-color var(--duration-hover) ease;
+}
+
+.arrowBtn:hover {
+  background-color: rgba(28, 25, 23, 0.08);
+}
+
+.arrowBtn:active {
+  background-color: rgba(28, 25, 23, 0.15);
+}
+
+.todayChip {
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--color-anchor);
+  border: 1.5px solid var(--color-anchor);
+  border-radius: 100px;
+  padding: 4px 12px;
+  transition: opacity var(--duration-panel) ease-in-out,
+              background-color var(--duration-hover) ease;
+  opacity: 1;
+}
+
+.todayChip:hover {
+  background-color: var(--color-anchor-muted);
+}
+
+.todayChipHidden {
+  opacity: 0;
+  pointer-events: none;
+}
