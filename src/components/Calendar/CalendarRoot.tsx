@@ -13,7 +13,7 @@ import CalendarGrid from './CalendarGrid';
 import NotesPanel from './NotesPanel';
 import styles from './CalendarRoot.module.css';
 
-const emptySelection: SelectionState = { phase: 'idle', start: null, end: null, isDragging: false };
+const emptySelection: SelectionState = { phase: 'idle', start: null, end: null, previewEnd: null, isDragging: false };
 
 export default function CalendarRoot() {
   const [viewMonth, setViewMonth] = useState<ViewMonth>(getCurrentViewMonth);
