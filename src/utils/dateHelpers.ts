@@ -16,14 +16,28 @@ const DAY_NAMES = [
 
 export { MONTH_NAMES_FULL, MONTH_NAMES_SHORT, DAY_NAMES };
 
-/** Returns today as CalendarDate */
+/** Helper to get current Date based on IST */
+function getISTDateParts() {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Asia/Kolkata',
+    year: 'numeric',
+    month: 'numeric',
+    day: 'numeric'
+  }).formatToParts(new Date());
+
+  let year = 0, month = 0, day = 0;
+  for (const part of parts) {
+    if (part.type === 'year') year = parseInt(part.value, 10);
+    if (part.type === 'month') month = parseInt(part.value, 10);
+    if (part.type === 'day') day = parseInt(part.value, 10);
+  }
+  return { year, month, day };
+}
+
+/** Returns today as CalendarDate in IST */
 export function today(): CalendarDate {
-  const now = new Date();
-  return {
-    year: now.getFullYear(),
-    month: now.getMonth() + 1, // 1-indexed
-    day: now.getDate(),
-  };
+  const { year, month, day } = getISTDateParts();
+  return { year, month, day };
 }
 
 /** Deep equality check for two CalendarDates */
@@ -125,10 +139,10 @@ export function isDateInRange(date: CalendarDate, start: CalendarDate, end: Cale
          (isSameDate(date, e) || isBeforeDate(date, e));
 }
 
-/** Returns the current month as ViewMonth */
+/** Returns the current month as ViewMonth in IST */
 export function getCurrentViewMonth(): ViewMonth {
-  const now = new Date();
-  return { year: now.getFullYear(), month: now.getMonth() + 1 };
+  const { year, month } = getISTDateParts();
+  return { year, month };
 }
 
 /** Returns the day-of-week name for a CalendarDate */

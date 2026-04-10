@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { ViewMonth, NavDirection, CalendarDate, SelectionState } from '@/types/calendar';
-import { getCurrentViewMonth, addMonths, MONTH_NAMES_FULL, formatDateLabel, countDaysInRange } from '@/utils/dateHelpers';
+import { getCurrentViewMonth, addMonths, MONTH_NAMES_FULL, formatDateLabel, countDaysInRange, today } from '@/utils/dateHelpers';
 import { HERO_IMAGES } from '@/data/heroImages';
 import { useCalendarDays } from '@/hooks/useCalendarDays';
 import { useRangeSelection } from '@/hooks/useRangeSelection';
@@ -134,14 +134,6 @@ export default function CalendarRoot() {
     triggerFlipNavigation(addMonths(viewMonth, 1), 'next');
   }, [viewMonth, triggerFlipNavigation]);
 
-  const handleToday = useCallback(() => {
-    const current = getCurrentViewMonth();
-    if (current.year === viewMonth.year && current.month === viewMonth.month) return;
-    const direction = (current.year * 12 + current.month) > (viewMonth.year * 12 + viewMonth.month) ? 'next' : 'prev';
-    setFocusDate({ year: current.year, month: current.month, day: 1 });
-    triggerFlipNavigation(current, direction);
-  }, [viewMonth, triggerFlipNavigation]);
-
   const handleNavigateToDate = useCallback((date: CalendarDate, shouldSelectStart = true) => {
     const targetMonth = { year: date.year, month: date.month };
     if (shouldSelectStart) setSelectionStart(date);
@@ -154,6 +146,10 @@ export default function CalendarRoot() {
     setFocusDate(date);
     triggerFlipNavigation(targetMonth, direction);
   }, [viewMonth, setSelectionStart, triggerFlipNavigation]);
+
+  const handleToday = useCallback(() => {
+    handleNavigateToDate(today());
+  }, [handleNavigateToDate]);
 
   const handleFocusDateApplied = useCallback(() => setFocusDate(null), []);
 
