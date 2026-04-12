@@ -20,6 +20,16 @@ export default function CalendarRoot() {
   const [heroMonth, setHeroMonth] = useState<ViewMonth>(getCurrentViewMonth);
   const [navDirection, setNavDirection] = useState<NavDirection>(null);
   const [focusDate, setFocusDate] = useState<CalendarDate | null>(null);
+  const [todayDate, setTodayDate] = useState<CalendarDate>(today);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    // Ensure the date is fresh when mounting on client
+    setTodayDate(today());
+    setViewMonth(getCurrentViewMonth());
+    setHeroMonth(getCurrentViewMonth());
+  }, []);
   
   // Dual-buffer flip state
   const [exitingMonth, setExitingMonth] = useState<ViewMonth | null>(null);
@@ -77,8 +87,8 @@ export default function CalendarRoot() {
   }, [dominantColor]);
 
   // Dual-buffer days computation
-  const days = useCalendarDays(viewMonth, selection, hasNote);
-  const exitingMonthDays = useCalendarDays(exitingMonth ?? viewMonth, emptySelection, hasNote);
+  const days = useCalendarDays(viewMonth, selection, hasNote, todayDate);
+  const exitingMonthDays = useCalendarDays(exitingMonth ?? viewMonth, emptySelection, hasNote, todayDate);
 
   // Live region announcement
   const [announcement, setAnnouncement] = useState('');
@@ -176,7 +186,7 @@ export default function CalendarRoot() {
   }, [selection.isDragging, onCellPointerUp]);
 
   return (
-    <div className={styles.root} ref={containerRef} role="region" aria-label="Interactive calendar">
+    <div key={mounted ? 'client' : 'server'} className={styles.root} ref={containerRef} role="region" aria-label="Interactive calendar">
       <HeroPanel
         imageUrl={heroImage.url}
         imageAlt={heroImage.alt}

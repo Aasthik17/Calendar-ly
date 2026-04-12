@@ -5,7 +5,7 @@ import { CalendarDay, CalendarDate, SelectionState, ViewMonth } from '@/types/ca
 import {
   getDaysInMonth,
   getFirstDayOfWeek,
-  today as getToday,
+  
   isSameDate,
   isBeforeDate,
   isDateInRange,
@@ -20,11 +20,11 @@ import {
 export function useCalendarDays(
   viewMonth: ViewMonth,
   selection: SelectionState,
-  hasNoteForDate: (date: CalendarDate) => boolean
+  hasNoteForDate: (date: CalendarDate) => boolean,
+  todayDate: CalendarDate
 ): CalendarDay[] {
   return useMemo(() => {
     const { year, month } = viewMonth;
-    const todayDate = getToday();
     const daysInMonth = getDaysInMonth(year, month);
     const firstDayOffset = getFirstDayOfWeek(year, month); // 0=Mon..6=Sun
 
@@ -77,7 +77,7 @@ export function useCalendarDays(
     }
 
     return days;
-  }, [viewMonth, selection, hasNoteForDate]);
+  }, [viewMonth, selection, hasNoteForDate, todayDate.year, todayDate.month, todayDate.day]);
 }
 
 /**
